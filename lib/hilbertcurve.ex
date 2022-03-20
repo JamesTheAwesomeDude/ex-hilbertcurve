@@ -25,7 +25,6 @@ defmodule HilbertCurve do
 	@doc """
 	Given a co-ordinate list `x` referring to a point, returns its distance
 	along an `order`-degree hilbert curve approximation
-	
 	"""
 	def dist(x, order) when is_list(x) do
 		x
