@@ -4,7 +4,7 @@ defmodule HilbertCurveTest do
 
 	test "stock example" do
 		# In 3-dimensional space,
-		# the 7856th point along a
+		# the 7865th point along a
 		# hilbert curve with 5 bits of precision
 		# is x=5 y=10 z=20
 		assert HilbertCurve.point(7865, 5, 3) == [5, 10, 20]
