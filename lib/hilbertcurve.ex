@@ -77,10 +77,12 @@ defmodule HilbertCurve do
 
 	def uew_atom(q, {x_i, x_0}) do
 		p = q - 1
-		if Bitwise.band(x_i, q) != 0 do
-			{x_i, invert_bits(x_0, p)}
-		else
+		if Bitwise.band(x_i, q) == 0 do
+		    # Exchange low bits of x[i] and x[0]
 			exchange_bits({x_i, x_0}, p)
+		else
+		    # Just invert low bits of x[0]
+			{x_i, invert_bits(x_0, p)}
 		end
 	end
 
