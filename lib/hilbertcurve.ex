@@ -78,9 +78,9 @@ defmodule HilbertCurve do
 	def uew_atom(q, {x_i, x_0}) do
 		p = q - 1
 		if Bitwise.band(x_i, q) != 0 do
-			{x_i, invert(x_0, p)}
+			{x_i, invert_bits(x_0, p)}
 		else
-			exchange({x_i, x_0}, p)
+			exchange_bits({x_i, x_0}, p)
 		end
 	end
 
@@ -142,16 +142,16 @@ defmodule HilbertCurve do
 		x # return
 	end
 
-	def invert(i, mask \\ -1) do
+	defp invert_bits(i, mask \\ -1) do
 		Bitwise.bxor(i, mask);
 	end
 
-	def exchange({a, b}, mask) do
+	defp exchange_bits({a, b}, mask) do
 		c = Bitwise.bxor(a, b) &&& mask
 		{Bitwise.bxor(a, c), Bitwise.bxor(b, c)}
 	end
 
-	def transpose(i, order, ndims) do
+	defp transpose(i, order, ndims) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L85-L97
 		#TODO: figure out what this function does
 		i
@@ -162,7 +162,7 @@ defmodule HilbertCurve do
 		|> Enum.map(&from_bits/1)
 	end
 
-	def untranspose(x, order) do
+	defp untranspose(x, order) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L100-L112
 		#TODO: figure out what this function does
 		x
@@ -173,37 +173,37 @@ defmodule HilbertCurve do
 		|> from_bits()
 	end
 
-	def scan_unzip(enumerable, initial_acc, f) do
+	defp scan_unzip(enumerable, initial_acc, f) do
 		Stream.scan(enumerable, initial_acc, f)
 		# |> Enum.to_list() |> IO.inspect()
 		|> Enum.unzip()
 	end
 
-	def to_bits(i, width) do
+	defp to_bits(i, width) do
 		i
 		|> to_bitstring(width)
 		|> String.to_charlist()
 		|> Enum.map(&(&1 - hd '0'))
 	end
 
-	def to_bitstring(i, width \\ 0) do
+	defp to_bitstring(i, width \\ 0) do
 		Integer.to_string(i, 2)
 		|> String.pad_leading(width, "0")
 	end
 
-	# def from_bits(bs) when is_bitstring(bs) do
+	# defp from_bits(bs) when is_bitstring(bs) do
 	#	 padding_size = 7 - rem(:erlang.bit_size(bs) + 7, 8)
 	#	 padding = <<0::size(padding_size)>>
 	#	 :binary.decode_unsigned(<< padding, bs :: bitstring >>)
 	# end
 
-	def from_bits(l) when is_list(l) do
+	defp from_bits(l) when is_list(l) do
 		Enum.map(l, &(&1 + hd '0'))
 		|> List.to_string()
 		|> from_bitstring()
 	end
 
-	def from_bitstring(s) do
+	defp from_bitstring(s) do
 		Integer.parse(s, 2)
 		|> (fn {i, ""} -> i end).()
 	end
