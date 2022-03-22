@@ -19,7 +19,7 @@ defmodule HilbertCurve do
 		d
 		|> transpose(order, ndims)
 		|> gray_decode()
-		|> uew(order)
+		|> uew(order, :normal)
 	end
 
 	@doc """
@@ -28,7 +28,7 @@ defmodule HilbertCurve do
 	"""
 	def dist(x, order) when is_list(x) do
 		x
-		|> iuew(order)
+		|> uew(order, :invert)
 		|> gray_encode(order)
 		|> untranspose(order)
 	end
@@ -85,11 +85,14 @@ defmodule HilbertCurve do
 		end
 	end
 
-	def uew(x, order) do
+	def uew(x, order, mode) do
+		invert = case mode do :normal -> false; :invert -> true; end
 		k_max = order - 1
+		k_range = conditional_reverse(invert, (1..k_max))
+		# for( q = 2 ; q != (2 << (order - 1)) ; q <<= 1 )
+		# for( q = (1 << (order - 1)) ; q > 1 ; q >>= 1 )
 		{x} = Enum.reduce(
-			# for( q = 2; q != (2 << (order - 1)) ; q <<= 1 )
-			(1..k_max),
+			k_range,
 			{x},
 			fn cur, acc ->
 				k = cur
@@ -98,7 +101,7 @@ defmodule HilbertCurve do
 				q = 1 <<< k
 
 				x = scan_unzip(
-					Enum.reverse(x),
+					conditional_reverse(invert, x),
 					{nil, hd(x)},
 					fn cur, acc ->
 						x_i = cur
@@ -106,37 +109,7 @@ defmodule HilbertCurve do
 						uew_atom(q, {x_i, x_0})
 					end
 				)
-				|> (fn {x_reversed, _} -> Enum.reverse(x_reversed)).()
-
-				{x}
-			end
-		)
-
-		x # return
-	end
-
-	def iuew(x, order) do
-		k_max = order - 1
-		{x} = Enum.reduce(
-			# for( q = (1 << (order - 1)) ; q > 1 ; q >>= 1 )
-			(k_max..1),
-			{x},
-			fn cur, acc ->
-				k = cur
-				{x} = acc
-
-				q = 1 <<< k
-
-				x = scan_unzip(
-					x,
-					{nil, hd(x)},
-					fn cur, acc ->
-						x_i = cur
-						{_, x_0} = acc
-						uew_atom(q, {x_i, x_0})
-					end
-				)
-				|> (fn {x, _} -> x).()
+				|> (fn {l, _} -> conditional_reverse(invert, x) end).()
 
 				{x}
 			end
@@ -152,6 +125,10 @@ defmodule HilbertCurve do
 	defp exchange_bits({a, b}, mask) do
 		c = Bitwise.bxor(a, b) &&& mask
 		{Bitwise.bxor(a, c), Bitwise.bxor(b, c)}
+	end
+
+	defp conditional_reverse(condition, l) do
+		if(condition, do: l, else: Enum.reverse(l))
 	end
 
 	defp transpose(i, order, ndims) do
@@ -233,10 +210,10 @@ defmodule HilbertCurve do
 			end
 
 			# uew function IS BROKEN
-			if [5, 10, 20] == uew([7, 4, 21], 5) do
-				IO.puts("HilbertCurve.uew OK")
+			if [5, 10, 20] == uew([7, 4, 21], 5, :normal) do
+				IO.puts("HilbertCurve.uew :normal OK")
 			else
-				IO.puts("HilbertCurve.uew BROKEN")
+				IO.puts("HilbertCurve.uew :normal BROKEN")
 			end
 
 		end
@@ -260,11 +237,11 @@ defmodule HilbertCurve do
 				IO.puts("HilbertCurve.gray_encode BROKEN")
 			end
 
-			# iuew function IS BROKEN
-			if [7, 4, 21] == iuew([5, 10, 20], 5) do
-				IO.puts("HilbertCurve.iuew OK")
+			# inverse uew function IS BROKEN
+			if [7, 4, 21] == uew([5, 10, 20], 5, :invert) do
+				IO.puts("HilbertCurve.uew :invert OK")
 			else
-				IO.puts("HilbertCurve.iuew BROKEN")
+				IO.puts("HilbertCurve.uew :invert BROKEN")
 			end
 
 		end
