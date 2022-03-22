@@ -77,10 +77,10 @@ defmodule HilbertCurve do
 	def uew_atom(q, {x_i, x_0}) do
 		p = q - 1
 		if Bitwise.band(x_i, q) == 0 do
-		    # Exchange low bits of x[i] and x[0]
+			# Exchange low bits of x[i] and x[0]
 			exchange_bits({x_i, x_0}, p)
 		else
-		    # Just invert low bits of x[0]
+			# Just invert low bits of x[0]
 			{x_i, invert_bits(x_0, p)}
 		end
 	end
@@ -97,7 +97,7 @@ defmodule HilbertCurve do
 
 				q = 1 <<< k
 
-				{x_reversed, _} = scan_unzip(
+				x = scan_unzip(
 					Enum.reverse(x),
 					{nil, hd(x)},
 					fn cur, acc ->
@@ -106,8 +106,9 @@ defmodule HilbertCurve do
 						uew_atom(q, {x_i, x_0})
 					end
 				)
+				|> (fn {x_reversed, _} -> Enum.reverse(x_reversed)).()
 
-				{Enum.reverse(x_reversed)}
+				{x}
 			end
 		)
 
@@ -126,7 +127,7 @@ defmodule HilbertCurve do
 
 				q = 1 <<< k
 
-				{x, _} = scan_unzip(
+				x = scan_unzip(
 					x,
 					{nil, hd(x)},
 					fn cur, acc ->
@@ -135,6 +136,7 @@ defmodule HilbertCurve do
 						uew_atom(q, {x_i, x_0})
 					end
 				)
+				|> (fn {x, _} -> x).()
 
 				{x}
 			end
