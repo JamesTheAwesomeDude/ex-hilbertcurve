@@ -43,10 +43,12 @@ defmodule HilbertCurve do
 	def gray_encode_a(x) do
 		# for i in range(1, self.n):
 		#   point[i] ^= point[i-1]
-		Enum.map(Stream.zip(x, [0 | x]), fn {a, b} -> Bitwise.bxor(a, b) end)
+		Enum.scan(x, 0, &Bitwise.bxor/2)
 	end
 
 	def gray_encode_b(x, order) do
+		# BROKEN
+
 		# q = 1 << (order - 1)
 		# while q > 1:
 		#   if point[self.n-1] & q:
