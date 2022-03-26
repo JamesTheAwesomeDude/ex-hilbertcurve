@@ -77,6 +77,18 @@ def _gray_encode_c(x, t):
 		x[i] ^= t
 	return x
 
+def uew_atom(q, xi, x0):
+	p = q - 1
+	if not xi & q:
+		# exchange low bits
+		t = (x0 ^ xi) & p
+		x0 ^= t
+		xi ^= t
+	else:
+		# invert low bits
+		x0 ^= p
+	return xi, x0
+
 def undo_excess_work(x, m=None, n=None):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
@@ -90,16 +102,8 @@ def undo_excess_work(x, m=None, n=None):
 	z = 2 << (m - 1)
 	q = 2
 	while q != z:
-		p = q - 1
 		for i in range(n-1, -1, -1):
-			if x[i] & q:
-				# invert
-				x[0] ^= p
-			else:
-				# exchange
-				t = (x[0] ^ x[i]) & p
-				x[0] ^= t
-				x[i] ^= t
+			x[i], x[0] = uew_atom(q, x[i], x[0])
 		q <<= 1
 
 	return x
@@ -117,16 +121,8 @@ def inverse_undo_excess_work(x, m=None, n=None):
 
 	q = 1 << (m - 1)
 	while q > 1:
-		p = q - 1
 		for i in range(n):
-			if not x[i] & q:
-				# exchange
-				t = (x[0] ^ x[i]) & p
-				x[0] ^= t
-				x[i] ^= t
-			else:
-				# invert
-				x[0] ^= p
+			x[i], x[0] = uew_atom(q, x[i], x[0])
 		q >>= 1
 
 	return x
