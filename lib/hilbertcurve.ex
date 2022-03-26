@@ -35,11 +35,20 @@ defmodule HilbertCurve do
 
 	def gray_encode(x, order) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L228-L238
+		x = gray_encode_a(x)
+		t = gray_encode_b(x, order)
+		x = gray_encode_c(x, t)
 
+		x
+	end
+
+	def gray_encode_a(x) do
 		# for i in range(1, self.n):
 		#   point[i] ^= point[i-1]
-		x = Enum.map(Stream.zip(x, [0 | x]), fn {a, b} -> Bitwise.bxor(a, b) end)
+		Enum.map(Stream.zip(x, [0 | x]), fn {a, b} -> Bitwise.bxor(a, b) end)
+	end
 
+	def gray_encode_b(x, order) do
 		# q = 1 << (order - 1)
 		# while q > 1:
 		#   if point[self.n-1] & q:
@@ -47,22 +56,24 @@ defmodule HilbertCurve do
 		#   q >>= 1
 		x_last = List.last(x)
 		max_k = order - 1
-		{t} = Enum.reduce(
-			(max_k..1),
-			{0},
+		Enum.reduce(
+			(max_k..2),
+			(0),
 			fn cur, acc ->
 				k = cur
-				{t} = acc
+				t = (acc)
 				q = 1 <<< k
 				p = q - 1
 				if Bitwise.band(x_last, q) != 0 do
-					{Bitwise.bxor(t, p)}
+					(Bitwise.bxor(t, p))
 				else
-					{t}
+					(t)
 				end
 			end
 		)
+	end
 
+	def gray_encode_c(x, t) do
 		# for i in range(self.n):
 		#   point[i] ^= t
 		Enum.map(x, fn x_i -> Bitwise.bxor(x_i, t) end)

@@ -43,22 +43,38 @@ def gray_encode(x, m=None):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L228-L238
 	"""
-	x = x.copy()
-	n = len(x)
 	if m is None:
 		m = max(map(int.bit_length, x))
 
+	x = _gray_encode_a(x)
+	t = _gray_encode_b(x, m=m)
+	x = _gray_encode_c(x, t)
+
+	return x
+
+def _gray_encode_a(x):
+	x = x.copy()
+	n = len(x)
 	for i in range(1, n):
 		x[i] ^= x[i-1]
+	return x
+
+def _gray_encode_b(x, m):
+	n = len(x)
 	t = 0
 	q = 1 << (m - 1)
 	while q > 1:
+		p = q - 1
 		if x[n-1] & q:
-			t ^= q - 1
+			t ^= p
 		q >>= 1
+	return t
+
+def _gray_encode_c(x, t):
+	x = x.copy()
+	n = len(x)
 	for i in range(n):
 		x[i] ^= t
-
 	return x
 
 def undo_excess_work(x, m=None, n=None):
