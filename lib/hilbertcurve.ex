@@ -40,34 +40,28 @@ defmodule HilbertCurve do
 		gray_encode_c(y, t)
 	end
 
-	def gray_encode_a(x) do
+	defp gray_encode_a(x) do
 		# for i in range(1, self.n):
 		#   point[i] ^= point[i-1]
 		Enum.scan(x, 0, &Bitwise.bxor/2)
 	end
 
-	def gray_encode_b(x, order) do
-		# BROKEN
-
+	defp gray_encode_b(x, order) do
 		# q = 1 << (order - 1)
 		# while q > 1:
 		#   if point[self.n-1] & q:
 		#     t ^= q - 1
 		#   q >>= 1
 		x_last = List.last(x)
-		max_k = order - 1
+		k_range = ((order-1)..1)
 		Enum.reduce(
-			(max_k..2),
-			(0),
-			fn cur, acc ->
-				k = cur
-				t = (acc)
-				q = 1 <<< k
-				p = q - 1
+			Stream.map(k_range, &(1 <<< &1)),
+			0,
+			fn q, t ->
 				if Bitwise.band(x_last, q) != 0 do
-					(Bitwise.bxor(t, p))
+					Bitwise.bxor(t, q - 1)
 				else
-					(t)
+					t
 				end
 			end
 		)
@@ -99,30 +93,16 @@ defmodule HilbertCurve do
 
 	def uew(x, order, mode) do
 		invert = case mode do :normal -> false; :invert -> true; end
-		k_max = order - 1
-		k_range = conditional_reverse(invert, (1..k_max))
-		# for( q = 2 ; q != (2 << (order - 1)) ; q <<= 1 )
-		# for( q = (1 << (order - 1)) ; q > 1 ; q >>= 1 )
-		{x} = Enum.reduce(
-			k_range,
-			{x},
-			fn cur, acc ->
-				k = cur
-				{x} = acc
-
-				q = 1 <<< k
-
-				x = scan_unzip(
-					conditional_reverse(invert, x),
-					{nil, hd(x)},
-					fn cur, acc ->
-						x_i = cur
-						{_, x_0} = acc
-						uew_atom(q, {x_i, x_0})
-					end
-				) |> (fn {l, _} -> conditional_reverse(invert, l) end).()
-
-				{x}
+		k_range = case mode do :normal -> (0..(order-1)); :invert -> ((order-1)..1); end
+		x = Enum.reduce(
+			Stream.map(k_range, &(1 <<< &1)),
+			x,
+			fn q, x ->
+				case mode do :normal ->
+					x
+				:invert ->
+					x
+				end
 			end
 		)
 
@@ -157,7 +137,7 @@ defmodule HilbertCurve do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L100-L112
 		#TODO: figure out what this function does
 		x
-		|> Stream.map(fn i -> to_bits(i, order) end)
+		|> Stream.map(&(to_bits(&1, order)))
 		|> Stream.zip()
 		|> Enum.map(&Tuple.to_list/1)
 		|> List.flatten()
@@ -172,13 +152,14 @@ defmodule HilbertCurve do
 
 	defp to_bits(i, width) do
 		i
-		|> to_bitstring(width)
+		|> to_bitstring(width) #TODO: don't use string operations?
 		|> String.to_charlist()
 		|> Enum.map(&(&1 - hd '0'))
 	end
 
 	defp to_bitstring(i, width \\ 0) do
-		Integer.to_string(i, 2)
+		i
+		|> Integer.to_string(2)
 		|> String.pad_leading(width, "0")
 	end
 
@@ -189,13 +170,15 @@ defmodule HilbertCurve do
 	# end
 
 	defp from_bits(l) when is_list(l) do
-		Enum.map(l, &(&1 + hd '0'))
+		l
+		|> Enum.map(&(&1 + hd '0'))
 		|> List.to_string()
 		|> from_bitstring()
 	end
 
 	defp from_bitstring(s) do
-		Integer.parse(s, 2)
+		s
+		|> Integer.parse(2)
 		|> (fn {i, ""} -> i end).()
 	end
 
@@ -241,6 +224,24 @@ defmodule HilbertCurve do
 				IO.puts("HilbertCurve.untranspose BROKEN")
 			end
 
+			# gray_encode_a function IS WORKING
+			if [7, 3, 22] == gray_encode_a([7, 4, 21]) do
+				IO.puts("HilbertCurve.gray_encode_a OK")
+			else
+				IO.puts("HilbertCurve.gray_encode_a BROKEN")
+			end
+			# gray_encode_b function IS BROKEN
+			if 13 == gray_encode_b([7, 3, 22], 5) do
+				IO.puts("HilbertCurve.gray_encode_b OK")
+			else
+				IO.puts("HilbertCurve.gray_encode_b BROKEN")
+			end
+			# gray_encode_c function IS WORKING
+			if [10, 14, 27] == gray_encode_c([7, 3, 22], 13) do
+				IO.puts("HilbertCurve.gray_encode_c OK")
+			else
+				IO.puts("HilbertCurve.gray_encode_c BROKEN")
+			end
 			# gray_encode function IS BROKEN
 			if [10, 14, 27] == gray_encode([7, 4, 21], 5) do
 				IO.puts("HilbertCurve.gray_encode OK")
