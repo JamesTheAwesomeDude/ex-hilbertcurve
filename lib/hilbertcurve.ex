@@ -118,8 +118,7 @@ defmodule HilbertCurve do
 						{_, x_0} = acc
 						uew_atom(q, {x_i, x_0})
 					end
-				)
-				|> (fn {l, _} -> conditional_reverse(invert, x) end).()
+				) |> (fn {l, _} -> conditional_reverse(invert, l) end).()
 
 				{x}
 			end
