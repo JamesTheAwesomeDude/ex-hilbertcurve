@@ -100,9 +100,10 @@ def undo_excess_work(x, m=None, n=None):
 		m = max(map(int.bit_length, x))
 
 	k_range = range(0, m, 1)
+	i_range = range(n-1, -1, -1)
 	for k in k_range:
 		q = 1 << k
-		for i in range(n-1, -1, -1):
+		for i in i_range:
 			x[i], x[0] = uew_atom(q, x[i], x[0])
 
 	return x
@@ -119,9 +120,10 @@ def inverse_undo_excess_work(x, m=None, n=None):
 		m = max(map(int.bit_length, x))
 
 	k_range = range(m-1, 0, -1)
+	i_range = range(0, n, 1)
 	for k in k_range:
 		q = 1 << k
-		for i in range(n):
+		for i in i_range:
 			x[i], x[0] = uew_atom(q, x[i], x[0])
 
 	return x
