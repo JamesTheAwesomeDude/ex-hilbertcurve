@@ -2,12 +2,12 @@
 
 
 def point(d, m, n=2):
-	return undo_excess_work(gray_decode(transpose(d, m, n)), m)
+	return undo_excess_work(gray_decode(transpose(d, m, n)), m, inverse=False)
 	# return hilbertcurve.HilbertCurve(m, n).point_from_distance(d)
 
 
 def dist(x, m):
-	return untranspose(gray_encode(inverse_undo_excess_work(x, m), m), m)
+	return untranspose(gray_encode(undo_excess_work(x, m, inverse=True), m), m)
 	# return hilbertcurve.HilbertCurve(m, n).distance_from_point(x)
 
 
@@ -89,28 +89,9 @@ def uew_atom(q, xi, x0):
 		x0 ^= p
 	return xi, x0
 
-def undo_excess_work(x, m=None, n=None):
+def undo_excess_work(x, m=None, n=None, inverse=False):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
-	"""
-	x = x.copy()
-	if n is None:
-		n = len(x)
-	if m is None:
-		m = max(map(int.bit_length, x))
-
-	k_range = range(0, m, 1)
-	i_range = range(n-1, -1, -1)
-	for k in k_range:
-		q = 1 << k
-		for i in i_range:
-			x[i], x[0] = uew_atom(q, x[i], x[0])
-
-	return x
-
-
-def inverse_undo_excess_work(x, m=None, n=None):
-	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L215-L226
 	"""
 	x = x.copy()
@@ -119,8 +100,13 @@ def inverse_undo_excess_work(x, m=None, n=None):
 	if m is None:
 		m = max(map(int.bit_length, x))
 
-	k_range = range(m-1, 0, -1)
-	i_range = range(0, n, 1)
+	if not inverse:
+		k_range = range(0, m, 1)
+		i_range = range(n-1, -1, -1)
+	else:
+		k_range = range(m-1, 0, -1)
+		i_range = range(0, n, 1)
+
 	for k in k_range:
 		q = 1 << k
 		for i in i_range:
