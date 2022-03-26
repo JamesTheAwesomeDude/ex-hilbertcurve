@@ -58,7 +58,7 @@ defmodule HilbertCurve do
 		[x0 | Enum.map(Stream.zip(x, tl x), fn {a, b} -> Bitwise.bxor(a, b) end)]
 	end
 
-	def uew_atom(q, {x_i, x_0}) do
+	defp uew_atom(q, {x_i, x_0}) do
 		p = q - 1
 		if Bitwise.band(x_i, q) == 0 do
 			# Exchange low bits of x[i] and x[0]
@@ -166,6 +166,12 @@ defmodule HilbertCurve do
 	end
 
 	def tests do
+
+		if {12309, 56825} == uew_atom(64, {12345, 56789}) do
+			IO.puts("HilbertCurve.uew_atom OK")
+		else
+			IO.puts("HilbertCurve.uew_atom BROKEN")
+		end
 
 		if [5, 10, 20] == point(7865, 5, 3) do
 			IO.puts("HilbertCurve.point OK")
