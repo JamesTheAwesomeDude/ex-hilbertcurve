@@ -33,29 +33,12 @@ defmodule HilbertCurve do
 		|> untranspose(order)
 	end
 
-	def gray_encode(x, order) do
+	defp gray_encode(x, order) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L228-L238
-		y = gray_encode_a(x)
-		t = gray_encode_b(y, order)
-		gray_encode_c(y, t)
-	end
-
-	defp gray_encode_a(x) do
-		# for i in range(1, self.n):
-		#   point[i] ^= point[i-1]
-		Enum.scan(x, 0, &Bitwise.bxor/2)
-	end
-
-	defp gray_encode_b(x, order) do
-		# q = 1 << (order - 1)
-		# while q > 1:
-		#   if point[self.n-1] & q:
-		#     t ^= q - 1
-		#   q >>= 1
+		x = Enum.scan(x, 0, &Bitwise.bxor/2)
 		x_last = List.last(x)
-		k_range = ((order-1)..1)
-		Enum.reduce(
-			Stream.map(k_range, &(1 <<< &1)),
+		t = Enum.reduce(
+			Stream.map(((order-1)..1), &(1 <<< &1)),
 			0,
 			fn q, t ->
 				if Bitwise.band(x_last, q) != 0 do
@@ -65,12 +48,7 @@ defmodule HilbertCurve do
 				end
 			end
 		)
-	end
-
-	defp gray_encode_c(x, t) do
-		# for i in range(self.n):
-		#   point[i] ^= t
-		Enum.map(x, fn x_i -> Bitwise.bxor(x_i, t) end)
+		Enum.map(x, &(Bitwise.bxor(&1, t)))
 	end
 
 	defp gray_decode(x) do
@@ -224,25 +202,7 @@ defmodule HilbertCurve do
 				IO.puts("HilbertCurve.untranspose BROKEN")
 			end
 
-			# gray_encode_a function IS WORKING
-			if [7, 3, 22] == gray_encode_a([7, 4, 21]) do
-				IO.puts("HilbertCurve.gray_encode_a OK")
-			else
-				IO.puts("HilbertCurve.gray_encode_a BROKEN")
-			end
-			# gray_encode_b function IS BROKEN
-			if 13 == gray_encode_b([7, 3, 22], 5) do
-				IO.puts("HilbertCurve.gray_encode_b OK")
-			else
-				IO.puts("HilbertCurve.gray_encode_b BROKEN")
-			end
-			# gray_encode_c function IS WORKING
-			if [10, 14, 27] == gray_encode_c([7, 3, 22], 13) do
-				IO.puts("HilbertCurve.gray_encode_c OK")
-			else
-				IO.puts("HilbertCurve.gray_encode_c BROKEN")
-			end
-			# gray_encode function IS BROKEN
+			# gray_encode function IS WORKING
 			if [10, 14, 27] == gray_encode([7, 4, 21], 5) do
 				IO.puts("HilbertCurve.gray_encode OK")
 			else
