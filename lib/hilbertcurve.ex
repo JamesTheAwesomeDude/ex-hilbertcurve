@@ -70,8 +70,7 @@ defmodule HilbertCurve do
 	end
 
 	def uew(x, order, mode) do
-		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
-		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L215-L226
+		# https://github.com/JamesTheAwesomeDude/ex-hilbertcurve/blob/44571d18efe17ea6459712ac055355fd885a39b6/reference.py#L92-L114
 		k_range = case mode do :normal -> (0..(order-1)) ; :invert -> ((order-1)..1) end
 		maybe_reverse = case mode do :normal -> fn x -> x end ; :invert -> fn x -> Enum.reverse(x) end end
 		x = Enum.reduce(
