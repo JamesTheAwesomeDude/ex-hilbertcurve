@@ -67,11 +67,11 @@ defmodule HilbertCurve do
 		Enum.map(x, fn x_i -> Bitwise.bxor(x_i, t) end)
 	end
 
-	def gray_decode(x) do
+	defp gray_decode(x) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L128-L132
-
-		[ hd(x) | tl(Enum.scan(x, 0, &Bitwise.bxor/2)) ]
-
+		t = List.last(x) >>> 1
+		x0 = Bitwise.bxor(hd(x), t)
+		[x0 | Enum.map(Stream.zip(x, tl x), fn {a, b} -> Bitwise.bxor(a, b) end)]
 	end
 
 	def uew_atom(q, {x_i, x_0}) do
