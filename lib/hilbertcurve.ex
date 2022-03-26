@@ -40,6 +40,7 @@ defmodule HilbertCurve do
 		#   point[i] ^= point[i-1]
 		x = Enum.map(Stream.zip(x, [0 | x]), fn {a, b} -> Bitwise.bxor(a, b) end)
 
+		# q = 1 << (order - 1)
 		# while q > 1:
 		#   if point[self.n-1] & q:
 		#     t ^= q - 1
@@ -202,7 +203,7 @@ defmodule HilbertCurve do
 				IO.puts("HilbertCurve.transpose BROKEN")
 			end
 
-			# gray_encode function IS BROKEN
+			# gray_decode function IS WORKING
 			if [7, 4, 21] == gray_decode([10, 14, 27]) do
 				IO.puts("HilbertCurve.gray_decode OK")
 			else
