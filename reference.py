@@ -107,8 +107,7 @@ def undo_excess_work(x, m=None, n=None, inverse=False):
 		k_range = range(m-1, 0, -1)
 		i_range = range(0, n, 1)
 
-	for k in k_range:
-		q = 1 << k
+	for q in map(lambda k: 1 << k, k_range):
 		for i in i_range:
 			x[i], x[0] = uew_atom(q, x[i], x[0])
 
