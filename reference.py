@@ -43,8 +43,7 @@ def gray_encode(x, m=None):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L228-L238
 	"""
-	if m is None:
-		m = max(map(int.bit_length, x))
+	m = max(map(int.bit_length, x)) if m is None else m
 
 	x = _gray_encode_a(x)
 	t = _gray_encode_b(x, m=m)
@@ -89,16 +88,14 @@ def uew_atom(q, xi, x0):
 		x0 ^= p
 	return xi, x0
 
-def undo_excess_work(x, m=None, n=None, inverse=False):
+def undo_excess_work(x, m=None, /, inverse=False):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L215-L226
 	"""
 	x = x.copy()
-	if n is None:
-		n = len(x)
-	if m is None:
-		m = max(map(int.bit_length, x))
+	n = len(x)
+	m = max(map(int.bit_length, x)) if m is None else m
 
 	if not inverse:
 		k_range = range(0, m, 1) # (0..(m-1))
