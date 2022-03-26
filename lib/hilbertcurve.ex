@@ -35,11 +35,9 @@ defmodule HilbertCurve do
 
 	def gray_encode(x, order) do
 		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L228-L238
-		x = gray_encode_a(x)
-		t = gray_encode_b(x, order)
-		x = gray_encode_c(x, t)
-
-		x
+		y = gray_encode_a(x)
+		t = gray_encode_b(y, order)
+		gray_encode_c(y, t)
 	end
 
 	def gray_encode_a(x) do
@@ -73,7 +71,7 @@ defmodule HilbertCurve do
 		)
 	end
 
-	def gray_encode_c(x, t) do
+	defp gray_encode_c(x, t) do
 		# for i in range(self.n):
 		#   point[i] ^= t
 		Enum.map(x, fn x_i -> Bitwise.bxor(x_i, t) end)
