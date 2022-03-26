@@ -70,16 +70,33 @@ defmodule HilbertCurve do
 	end
 
 	def uew(x, order, mode) do
-		invert = case mode do :normal -> false; :invert -> true; end
-		k_range = case mode do :normal -> (0..(order-1)); :invert -> ((order-1)..1); end
+		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
+		# https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L215-L226
+		k_range = case mode do :normal -> (0..(order-1)) ; :invert -> ((order-1)..1) end
 		x = Enum.reduce(
 			Stream.map(k_range, &(1 <<< &1)),
 			x,
 			fn q, x ->
 				case mode do :normal ->
-					x
+					Stream.scan(
+						x,
+						{nil, hd(x)},
+						fn x_i, {_, x_0} ->
+							uew_atom(q, {x_i, x_0})
+						end
+					)
+					|> Enum.unzip()
+					|> (fn {x, _} -> x end).()
 				:invert ->
-					x
+					Stream.scan(
+						Enum.reverse(x),
+						{nil, hd(x)},
+						fn x_i, {_, x_0} ->
+							uew_atom(q, {x_i, x_0})
+						end
+					)
+					|> Enum.unzip()
+					|> (fn {x, _} -> Enum.reverse(x) end).()
 				end
 			end
 		)
