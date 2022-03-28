@@ -118,5 +118,4 @@ def undo_excess_work_inner(x, q, inverse):
 	for i in i_range:
 		x[i], x[0] = uew_atom(q, x[i], x[0])
 
-
 	return x
