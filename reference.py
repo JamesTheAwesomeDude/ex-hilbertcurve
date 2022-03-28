@@ -1,4 +1,12 @@
+from functools import wraps
 
+def functionalize_mutator(f):
+	@wraps(f)
+	def g(x, *args, **kwargs):
+		y = x.copy()
+		f(y, *args, **kwargs)
+		return y
+	return g
 
 
 def point(d, m, n=2):
@@ -24,19 +32,17 @@ def untranspose(x, m):
 	# return hilbertcurve.HilbertCurve(m, n)._transpose_to_hilbert_integer(x)
 
 
+@functionalize_mutator
 def gray_decode(x):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L128-L132
 	"""
-	x = x.copy()
 	n = len(x)
 
 	t = x[n-1] >> 1
 	for i in range(n-1, 0, -1):
 		x[i] ^= x[i-1]
 	x[0] ^= t
-
-	return x
 
 
 def gray_encode(x, m=None):
@@ -51,12 +57,13 @@ def gray_encode(x, m=None):
 
 	return x
 
+
+@functionalize_mutator
 def _gray_encode_a(x):
-	x = x.copy()
 	n = len(x)
 	for i in range(1, n):
 		x[i] ^= x[i-1]
-	return x
+
 
 def _gray_encode_b(x, m):
 	n = len(x)
@@ -69,12 +76,13 @@ def _gray_encode_b(x, m):
 		q >>= 1
 	return t
 
+
+@functionalize_mutator
 def _gray_encode_c(x, t):
-	x = x.copy()
 	n = len(x)
 	for i in range(n):
 		x[i] ^= t
-	return x
+
 
 def uew_atom(q, xi, x0):
 	p = q - 1
@@ -88,12 +96,12 @@ def uew_atom(q, xi, x0):
 		x0 ^= p
 	return xi, x0
 
+
 def undo_excess_work(x, m=None, /, inverse=False):
 	"""
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L134-L147
 	https://github.com/galtay/hilbertcurve/blob/v2.0.5/hilbertcurve/hilbertcurve.py#L215-L226
 	"""
-	x = x.copy()
 	n = len(x)
 	m = max(map(int.bit_length, x)) if m is None else m
 
@@ -104,11 +112,12 @@ def undo_excess_work(x, m=None, /, inverse=False):
 
 	for q in map(lambda k: 1 << k, k_range):
 		x = undo_excess_work_inner(x, q, inverse=inverse)
-
 	return x
 
+
+@functionalize_mutator
 def undo_excess_work_inner(x, q, inverse):
-	x = x.copy()
+	#print("undo_excess_work_inner(%s, %i, %s)" % (repr(x), q, repr(inverse)))
 	n = len(x)
 	if not inverse:
 		i_range = range(n-1, -1, -1) # ((n-1)..0)
@@ -118,4 +127,4 @@ def undo_excess_work_inner(x, q, inverse):
 	for i in i_range:
 		x[i], x[0] = uew_atom(q, x[i], x[0])
 
-	return x
+	#print(" => %s" % (repr(x),))
