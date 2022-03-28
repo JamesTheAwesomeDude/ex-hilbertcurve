@@ -178,6 +178,18 @@ defmodule HilbertCurve do
 			IO.puts("HilbertCurve.uew_atom BROKEN")
 		end
 
+		if [5, 5, 20] == uew_inner([4, 5, 21], 8, :normal) do
+			IO.puts("HilbertCurve.uew_inner :normal OK")
+		else
+			IO.puts("HilbertCurve.uew_inner :normal BROKEN")
+		end
+
+		if [4, 5, 21] == uew_inner([5, 5, 20], 8, :invert) do
+			IO.puts("HilbertCurve.uew_inner :invert OK")
+		else
+			IO.puts("HilbertCurve.uew_inner :invert BROKEN")
+		end
+
 		if [5, 10, 20] == point(7865, 5, 3) do
 			IO.puts("HilbertCurve.point OK")
 		else
