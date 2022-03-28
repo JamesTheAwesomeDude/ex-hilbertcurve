@@ -72,24 +72,28 @@ defmodule HilbertCurve do
 	def uew(x, order, mode) do
 		# https://github.com/JamesTheAwesomeDude/ex-hilbertcurve/blob/44571d18efe17ea6459712ac055355fd885a39b6/reference.py#L92-L114
 		k_range = case mode do :normal -> (0..(order-1)) ; :invert -> ((order-1)..1) end
-		maybe_reverse = case mode do :normal -> fn x -> x end ; :invert -> fn x -> Enum.reverse(x) end end
 		x = Enum.reduce(
 			Stream.map(k_range, &(1 <<< &1)),
 			x,
 			fn q, x ->
-				Stream.scan(
-					maybe_reverse.(x),
-					{nil, hd(x)},
-					fn x_i, {_, x_0} ->
-						uew_atom(q, {x_i, x_0})
-					end
-				)
-				|> Enum.unzip()
-				|> (fn {x, _} -> maybe_reverse.(x) end).()
+				IO.inspect(uew_inner(IO.inspect(x), q, mode))
 			end
 		)
 
 		x # return
+	end
+
+	def uew_inner(x, q, mode) do
+		maybe_reverse = case mode do :normal -> fn x -> x end ; :invert -> fn x -> Enum.reverse(x) end end
+		Stream.scan(
+			maybe_reverse.(x),
+			{nil, hd(x)},
+			fn x_i, {_, x_0} ->
+				uew_atom(q, {x_i, x_0})
+			end
+		)
+		|> Enum.unzip()
+		|> (fn {x, x_0_list} -> [List.last(x_0_list) | tl(maybe_reverse.(x))] end).()		
 	end
 
 	defp invert_bits(i, mask \\ -1) do
