@@ -99,13 +99,24 @@ def undo_excess_work(x, m=None, /, inverse=False):
 
 	if not inverse:
 		k_range = range(0, m, 1) # (0..(m-1))
-		i_range = range(n-1, -1, -1) # ((n-1)..0)
 	else:
 		k_range = range(m-1, 0, -1) # ((m-1)..1)
-		i_range = range(0, n, 1) # (0..(n-1))
 
 	for q in map(lambda k: 1 << k, k_range):
-		for i in i_range:
-			x[i], x[0] = uew_atom(q, x[i], x[0])
+		x = undo_excess_work_inner(x, q, inverse=inverse)
+
+	return x
+
+def undo_excess_work_inner(x, q, inverse):
+	x = x.copy()
+	n = len(x)
+	if not inverse:
+		i_range = range(n-1, -1, -1) # ((n-1)..0)
+	else:
+		i_range = range(0, n, 1) # (0..(n-1))
+
+	for i in i_range:
+		x[i], x[0] = uew_atom(q, x[i], x[0])
+
 
 	return x
